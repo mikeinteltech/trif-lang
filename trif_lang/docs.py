@@ -1,0 +1,87 @@
+"""Static documentation builder."""
+from __future__ import annotations
+
+import textwrap
+from pathlib import Path
+
+
+def build_docs() -> Path:
+    docs_root = Path("docs/build")
+    docs_root.mkdir(parents=True, exist_ok=True)
+    index = docs_root / "index.html"
+    index.write_text(
+        textwrap.dedent(
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8" />
+                <title>Trif Language Documentation</title>
+                <style>
+                  body { font-family: sans-serif; max-width: 960px; margin: auto; padding: 2rem; }
+                  pre { background: #111; color: #eee; padding: 1rem; }
+                  code { background: #f4f4f4; padding: 0.2rem 0.4rem; }
+                  nav a { margin-right: 1rem; }
+                </style>
+              </head>
+              <body>
+                <h1>Trif Language</h1>
+                <p>Trif is a multiparadigm language that blends the ergonomics of Python with
+                the modularity of Node.js. It compiles to Python or JavaScript and ships with a
+                batteries-included standard library for desktop, data, and web development.</p>
+                <nav>
+                  <a href="#getting-started">Getting started</a>
+                  <a href="#language">Language tour</a>
+                  <a href="#packages">Package manager</a>
+                  <a href="#interop">Interoperability</a>
+                </nav>
+                <section id="getting-started">
+                  <h2>Getting started</h2>
+                  <ol>
+                    <li>Create a file <code>hello.trif</code>.</li>
+                    <li>Write the following:</li>
+                  </ol>
+                  <pre><code>fn main() {
+    print("Hello, Trif!")
+}
+</code></pre>
+                  <p>Run with <code>python -m trif_lang run hello.trif</code>.</p>
+                </section>
+                <section id="language">
+                  <h2>Language tour</h2>
+                  <p>Trif supports <strong>functions</strong>, <strong>loops</strong>, <strong>conditions</strong>,
+                  <strong>parallelism</strong> via <code>spawn</code> and high-level data structures.</p>
+                  <pre><code>import std.io as io
+
+fn greet(name) {
+    io.println("Hi " + name)
+}
+
+fn main() {
+    let names = ["Ada", "Linus", "Margaret"]
+    for name in names {
+        spawn greet(name)
+    }
+}
+</code></pre>
+                </section>
+                <section id="packages">
+                  <h2>Package manager</h2>
+                  <p>Initialise packages with <code>python -m trif_lang package init</code>. Publish to the
+                  local registry and install dependencies offline.</p>
+                </section>
+                <section id="interop">
+                  <h2>Interoperability</h2>
+                  <p>Use <code>runtime.import_module</code> to call into Python packages, or compile to JavaScript
+                  to integrate with Node.js or modern browsers.</p>
+                </section>
+              </body>
+            </html>
+            """
+        ),
+        encoding="utf-8",
+    )
+    return index
+
+
+__all__ = ["build_docs"]

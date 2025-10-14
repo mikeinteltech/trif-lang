@@ -1,0 +1,36 @@
+{
+  "name": "trif-language-tools",
+  "displayName": "Trif Language Tools",
+  "description": "Syntax highlighting and IntelliSense-like completions for the Trif language.",
+  "version": "0.1.0",
+  "publisher": "trif",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "trif",
+        "aliases": ["Trif", "trif"],
+        "extensions": [".trif"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "trif",
+        "scopeName": "source.trif",
+        "path": "./syntaxes/trif.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "trif",
+        "path": "./snippets.json"
+      }
+    ]
+  },
+  "activationEvents": ["onLanguage:trif"],
+  "main": "./out/extension.js"
+}

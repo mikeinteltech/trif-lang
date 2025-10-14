@@ -1,0 +1,19 @@
+{
+  "Function": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:params}) {",
+      "    ${0}// body",
+      "}"
+    ],
+    "description": "Insert a Trif function"
+  },
+  "If": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "    ${0}",
+      "}"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+import std.io as io
+import std.net as net
+
+fn main() {
+    let name = io.prompt("Enter your name: ")
+    let message = io.prompt("Message to send: ")
+    net.send_tcp_message("127.0.0.1", 9009, name + ": " + message)
+    io.println("Message dispatched.")
+}

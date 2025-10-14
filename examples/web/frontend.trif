@@ -1,0 +1,8 @@
+let messages = ["Welcome", "to", "Trif"]
+
+fn main() {
+    let root = document.getElementById("app")
+    if root != null {
+        root.innerHTML = "Messages: " + messages.join(", ")
+    }
+}
