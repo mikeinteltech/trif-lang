@@ -74,7 +74,7 @@ export function main() {
 | `trif run <file>` | Compile and execute a program instantly. |
 | `trif create <name>` | Scaffold projects for `web`, `mobile`, `memory`, `reverse`, or `lib`. |
 | `trif package <...>` | npm-like package manager (init, install, publish, serve, use, list). |
-| `trif docs` | Generate the full handbook in `docs/build/index.html`. |
+| `trif docs` | Open the handbook located at `docs/index.html`. |
 | `trif repl` | Interactive shell for experimentation. |
 
 ## Package manager
@@ -129,7 +129,7 @@ Generate the full handbook:
 trif docs
 ```
 
-Open `docs/build/index.html` to read through the language tour, CLI reference, package manager guide, and standard library documentation.
+Open `docs/index.html` to read through the language tour, CLI reference, package manager guide, and standard library documentation. The `trif docs` command will launch it in your default browser when available.
 
 ## Examples
 
