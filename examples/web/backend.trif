@@ -1,0 +1,11 @@
+import std.io as io
+import http.server as http
+import socketserver
+
+fn main() {
+    let address = tuple(["127.0.0.1", 8080])
+    let handler = http.SimpleHTTPRequestHandler
+    let server = socketserver.TCPServer(address, handler)
+    io.println("Serving static files on http://127.0.0.1:8080")
+    server.serve_forever()
+}

@@ -1,0 +1,37 @@
+import std.io as io
+import std.net as net
+import std.threading as threads
+
+let clients = []
+
+fn handle_client(client, address) {
+    clients.append(client)
+    io.println("Client connected from " + str(address))
+    while true {
+        let data = client.recv(1024)
+        if !data {
+            break
+        }
+        let text = data.decode("utf-8").strip()
+        io.println("Received: " + text)
+        broadcast(text)
+    }
+    client.close()
+    if clients.count(client) > 0 {
+        clients.remove(client)
+    }
+}
+
+fn broadcast(message) {
+    for entry in clients {
+        entry.sendall((message + "\n").encode("utf-8"))
+    }
+}
+
+fn main() {
+    net.start_tcp_server("127.0.0.1", 9009, handle_client)
+    io.println("Chat server listening on 9009")
+    while true {
+        threads.sleep(1)
+    }
+}
