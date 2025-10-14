@@ -94,12 +94,16 @@ trif package serve --port 4873
 
 ## Standard library highlights
 
-- `std.io` &mdash; Console helpers, JSON utilities, and filesystem access.
+- `std.io` &mdash; Console helpers, JSON utilities, and quick scripting aids.
 - `std.http` &mdash; Express-style router with `createServer`, JSON/HTML helpers, and hot reload friendly design.
 - `std.mobile` &mdash; Blueprint mobile experiences and emit PWA-ready bundles.
 - `std.memory` &mdash; Manipulate raw buffers for instrumentation or binary patching.
 - `std.reverse` &mdash; Inspect ELF and PE binaries, gather section metadata, and generate hexdumps.
 - `std.managers` &mdash; Manual managers for tasks, state, resources, events, lifecycles, pipelines, and layered configuration.
+- `std.fs` &mdash; Path utilities, recursive scanning, copying, and atomic write helpers.
+- `std.process` &mdash; Launch external commands, stream output, and manage environment variables.
+- `std.crypto` &mdash; Hashing, HMAC signing, secure randomness, and UUID generation.
+- `std.web` &mdash; High-level HTTP client with query-string helpers.
 - `std.net`, `std.threading`, and `std.data` for networking, concurrency, and structured data.
 
 ## Advanced tooling
