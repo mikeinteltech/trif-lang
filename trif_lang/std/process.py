@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import os
+import shlex
 import shutil
 import subprocess
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Dict, Iterable, Mapping, Sequence
+from typing import Dict, Iterable, Iterator, Mapping, Sequence
 
 
 @dataclass(frozen=True)
@@ -138,6 +140,59 @@ def kill(process: subprocess.Popen[bytes]) -> None:
     process.kill()
 
 
+def spawn(
+    command: Sequence[str] | str,
+    *,
+    cwd: str | os.PathLike[str] | None = None,
+    env: Mapping[str, str] | None = None,
+    stdin: int | None = None,
+    stdout: int | None = None,
+    stderr: int | None = None,
+) -> subprocess.Popen[bytes]:
+    """Launch *command* returning the underlying :class:`subprocess.Popen`."""
+
+    if isinstance(command, str):
+        return subprocess.Popen(  # noqa: S603 - caller controls command
+            command,
+            shell=True,
+            cwd=cwd,
+            env=dict(env) if env is not None else None,
+            stdin=stdin,
+            stdout=stdout,
+            stderr=stderr,
+        )
+    return subprocess.Popen(  # noqa: S603
+        list(command),
+        shell=False,
+        cwd=cwd,
+        env=dict(env) if env is not None else None,
+        stdin=stdin,
+        stdout=stdout,
+        stderr=stderr,
+    )
+
+
+def quote(args: Sequence[str]) -> str:
+    """Return a shell-escaped string built from *args*."""
+
+    return " ".join(shlex.quote(part) for part in args)
+
+
+@contextmanager
+def temporary_env(mapping: Mapping[str, str], *, clear: bool = False) -> Iterator[None]:
+    """Temporarily modify the process environment."""
+
+    original = dict(os.environ)
+    try:
+        if clear:
+            os.environ.clear()
+        os.environ.update(mapping)
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(original)
+
+
 __all__ = [
     "CompletedProcess",
     "run",
@@ -148,4 +203,7 @@ __all__ = [
     "unsetEnv",
     "terminate",
     "kill",
+    "spawn",
+    "quote",
+    "temporary_env",
 ]
