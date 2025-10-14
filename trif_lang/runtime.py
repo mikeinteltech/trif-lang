@@ -52,14 +52,18 @@ class Runtime:
     def register_stdlib(self) -> None:
         from .std import (
             data,
+            fs,
             http,
             io,
             managers,
             memory,
             mobile,
             net,
+            process,
+            crypto,
             reverse,
             threading as trif_threading,
+            web,
         )
 
         self._register_static_module("std.io", io)
@@ -71,6 +75,10 @@ class Runtime:
         self._register_static_module("std.memory", memory)
         self._register_static_module("std.reverse", reverse)
         self._register_static_module("std.managers", managers)
+        self._register_static_module("std.fs", fs)
+        self._register_static_module("std.process", process)
+        self._register_static_module("std.crypto", crypto)
+        self._register_static_module("std.web", web)
 
     def import_module(self, name: str) -> ModuleProxy:
         self.prepare_project_environment(Path.cwd())
