@@ -1,4 +1,4 @@
-# Trif Language
+# Trif (Teriffic) Language
 
 Trif is a batteries-included programming language that feels like modern JavaScript while executing natively across macOS, Linux, and Windows. The toolchain compiles Trif source to Python or JavaScript, bundles an npm-inspired package manager, exposes an ergonomic CLI, and ships with extensive standard libraries for web, mobile, data, memory tooling, and reverse engineering.
 
