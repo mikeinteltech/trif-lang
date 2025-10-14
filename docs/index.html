@@ -76,6 +76,7 @@
                 <li><a class="hover:text-white" href="#language">Syntax essentials</a></li>
                 <li><a class="hover:text-white" href="#language-modules">Modules &amp; exports</a></li>
                 <li><a class="hover:text-white" href="#language-control">Control flow</a></li>
+                <li><a class="hover:text-white" href="#language-statements">Statement reference</a></li>
               </ul>
             </div>
             <div>
@@ -217,6 +218,141 @@ export function main() {
                 <li>Exceptions map to the runtime target: native <code>std::runtime_error</code> in C++, Python exceptions when targeting Python, and <code>Error</code> objects when targeting Node.js.</li>
               </ul>
             </article>
+
+          <section id="language-statements" class="mt-16 space-y-6">
+            <h3 class="text-2xl font-semibold text-white">Statement reference</h3>
+            <p class="text-sm text-slate-300">
+              Every statement in TRIF mirrors the ergonomics of modern JavaScript while preserving deterministic semantics.
+              Use the following snippets as starting points when assembling real applications—they highlight idiomatic
+              combinations of language features without redundant boilerplate.
+            </p>
+            <div class="grid gap-6 lg:grid-cols-2">
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Mutable bindings with <code>let</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Declare state that can evolve over time. Reassignments are explicit, keeping mutation deliberate and easy to audit.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>let retries = 0;
+
+while (retries &lt; 3) {
+    retries = retries + 1;
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Immutable configuration with <code>const</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Lock critical values to prevent accidental reassignment while still allowing property-level mutation when needed.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>const config = {
+    host: "127.0.0.1",
+    port: 8080
+};
+
+config.routes = ["status", "health"];
+const address = config.host + ":" + config.port;</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Declaring functions</h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Functions capture logic and always return a value explicitly. Combine with <code>return</code> to expose computed results.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>function formatUser(user) {
+    return user.name + " (" + user.role + ")";
+}
+
+const label = formatUser({ name: "Rin", role: "admin" });</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Branching with <code>if</code>/<code>else</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Chain guards with <code>else if</code> to cover nuanced scenarios. Each block can compute and return specialised values.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>function classifyLatency(ms) {
+    if (ms &lt; 50) {
+        return "fast";
+    } else if (ms &lt; 120) {
+        return "steady";
+    }
+    return "slow";
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Guard loops with <code>while</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Use <code>while</code> to react to runtime state, performing work until the exit condition becomes false.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>let buffer = queue.pop();
+
+while (buffer != null) {
+    processChunk(buffer);
+    buffer = queue.pop();
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Counting with <code>for</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Classic counter loops shine when batching work. Increment explicitly to keep aggressive diagnostics predictable.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>for (let i = 0; i &lt; jobs.length; i = i + 1) {
+    schedule(jobs[i]);
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Iterating with <code>for</code>...<code>in</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Traverse iterable structures without manual indexing. Combine with destructuring-style property access for clarity.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>let total = 0;
+
+for (let amount in ledger.amounts()) {
+    total = total + amount;
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Parallel work with <code>spawn</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Dispatch asynchronous tasks to the runtime scheduler. Combine with <code>await join()</code>-style helpers to coordinate.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>const worker = spawn(function() {
+    syncInventory();
+});
+
+worker.join();</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Handling exceptions</h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Wrap fragile operations in <code>try</code>/<code>catch</code>/<code>finally</code>. Rethrow when you cannot recover locally.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>let lastError = null;
+
+try {
+    riskyWrite(path, data);
+} catch (error) {
+    lastError = error.message;
+    throw error;
+} finally {
+    audit("write_attempt", path);
+}</code></pre>
+              </article>
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h4 class="text-lg font-semibold text-white">Early exits with <code>break</code> and <code>continue</code></h4>
+                <p class="mt-2 text-sm text-slate-300">
+                  Control tight loops precisely—skip non-essential work with <code>continue</code> and terminate once criteria are met.
+                </p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>for (let task in tasks) {
+    if (!task.enabled) {
+        continue;
+    }
+    if (task.priority &gt; 9000) {
+        alert(task);
+        break;
+    }
+    execute(task);
+}</code></pre>
+              </article>
+            </div>
+          </section>
           </section>
 
           <section id="cli" class="mt-24 space-y-8">
