@@ -4,6 +4,23 @@ Trif is a batteries-included programming language that feels like modern JavaScr
 
 ## Installation
 
+### Native C++ toolchain
+
+The new `trifc` compiler is implemented entirely in C++ and no longer depends on
+the Python runtime for core compilation. Build it directly with the lightweight
+`native/build.sh` script:
+
+```bash
+cd native
+./build.sh
+./build/trifc path/to/file.trif --target cpp
+```
+
+This pipeline performs a single optimized compilation step with minimal
+overhead, providing noticeably faster iteration than traditional CMake-based
+setups. Pass `--target python` or `--target javascript` to emit the legacy
+transpilation targets without invoking any Python infrastructure.
+
 ### macOS and Linux
 
 ```bash
@@ -57,7 +74,7 @@ export function main() {
 | `trif run <file>` | Compile and execute a program instantly. |
 | `trif create <name>` | Scaffold projects for `web`, `mobile`, `memory`, `reverse`, or `lib`. |
 | `trif package <...>` | npm-like package manager (init, install, publish, serve, use, list). |
-| `trif docs` | Generate the full handbook in `docs/build/index.html`. |
+| `trif docs` | Open the handbook located at `docs/index.html`. |
 | `trif repl` | Interactive shell for experimentation. |
 
 ## Package manager
@@ -112,7 +129,7 @@ Generate the full handbook:
 trif docs
 ```
 
-Open `docs/build/index.html` to read through the language tour, CLI reference, package manager guide, and standard library documentation.
+Open `docs/index.html` to read through the language tour, CLI reference, package manager guide, and standard library documentation. The `trif docs` command will launch it in your default browser when available.
 
 ## Examples
 
@@ -128,7 +145,10 @@ The `vscode-extension/` folder provides syntax highlighting, snippets, and inlin
 
 ## Interoperability
 
-Trif compiles to Python and JavaScript. Use the Python backend to embed Trif logic inside desktop applications or scripts, and the JavaScript backend to target Node.js, Service Workers, or modern browsers.
+The native compiler can still emit Python and JavaScript modules when needed.
+Use `--target python` for embedding inside existing CPython workflows or
+`--target javascript` to generate Node.js-compatible bundles, all powered by the
+new C++ backend.
 
 ## License
 

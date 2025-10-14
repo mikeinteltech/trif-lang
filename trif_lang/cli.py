@@ -8,13 +8,13 @@ import os
 import socketserver
 import sys
 import textwrap
+import webbrowser
 from functools import partial
 from pathlib import Path
 
 from .compiler import Compiler
 from .package_manager import OFFLINE_REGISTRY, LOCAL_REGISTRY, PackageManager
 from .runtime import Runtime
-from .docs import build_docs
 
 
 TEMPLATE_SNIPPETS = {
@@ -219,8 +219,12 @@ def serve_registry(port: int, directory: Path) -> None:
 
 
 def docs_command(_: argparse.Namespace) -> None:
-    docs_root = build_docs()
-    print(f"Documentation generated at {docs_root}")
+    docs_path = Path(__file__).resolve().parent.parent / "docs" / "index.html"
+    if docs_path.exists():
+        print(f"Opening documentation at {docs_path}")
+        webbrowser.open(docs_path.as_uri())
+    else:
+        print("Documentation not found locally. Visit https://trif-lang.github.io/ for the latest handbook.")
 
 
 def repl_command(_: argparse.Namespace) -> None:

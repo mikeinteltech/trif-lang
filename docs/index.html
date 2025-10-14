@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TRIF Language Handbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { font-feature-settings: "liga" on, "kern" on; }
+      ::selection { background-color: #6366f1; color: #0f172a; }
+      .content h2 { scroll-margin-top: 5rem; }
+      .content h3 { scroll-margin-top: 6rem; }
+      .content code { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100">
+    <div class="min-h-screen flex flex-col">
+      <header class="relative overflow-hidden border-b border-slate-800 bg-gradient-to-br from-indigo-600/20 via-slate-900 to-slate-950">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(129,140,248,0.35),transparent_60%)]"></div>
+        <div class="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-16 lg:flex-row lg:items-center lg:gap-16">
+          <div class="flex-1">
+            <p class="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-400/10 px-4 py-1 text-sm font-medium text-indigo-200">
+              <span class="h-2 w-2 rounded-full bg-indigo-300"></span>
+              TRIF Native Toolchain &amp; Ecosystem
+            </p>
+            <h1 class="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              Build high-performance systems with TRIF
+            </h1>
+            <p class="mt-4 text-lg text-slate-200">
+              TRIF delivers a JavaScript-inspired developer experience with native deployment targets, a zero-Python core compiler,
+              and opt-in outputs for C++, Python, or JavaScript. This handbook walks through every subsystem—from language
+              semantics and aggressive error modes to the package registry and CLI workflows.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="#getting-started" class="rounded-md bg-indigo-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400">Explore the language</a>
+              <a href="#cli" class="rounded-md border border-slate-700 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:border-indigo-400 hover:text-white">Jump to CLI reference</a>
+            </div>
+          </div>
+          <div class="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl shadow-indigo-900/40">
+            <h2 class="text-xl font-semibold text-white">Highlights</h2>
+            <dl class="space-y-3 text-sm text-slate-200">
+              <div class="flex items-start gap-3">
+                <dt class="mt-0.5 text-indigo-300">Native</dt>
+                <dd>Ultra-fast compilation pipeline written in C++ with optional ObjC extensions for Apple platforms.</dd>
+              </div>
+              <div class="flex items-start gap-3">
+                <dt class="mt-0.5 text-indigo-300">Interoperable</dt>
+                <dd>Compile to C++, Python, or Node.js with consistent semantics and shared standard library contracts.</dd>
+              </div>
+              <div class="flex items-start gap-3">
+                <dt class="mt-0.5 text-indigo-300">Safe</dt>
+                <dd>Enable aggressive error reporting to surface subtle issues during both compilation and runtime.</dd>
+              </div>
+              <div class="flex items-start gap-3">
+                <dt class="mt-0.5 text-indigo-300">Scalable</dt>
+                <dd>TrifPM delivers deterministic dependency graphs, secure mirroring, and lightning-fast resolution.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex flex-1">
+        <aside class="sticky top-0 hidden h-screen w-80 shrink-0 border-r border-slate-900 bg-slate-950/70 px-6 py-10 backdrop-blur-xl lg:block">
+          <nav aria-label="Main" class="space-y-6 text-sm font-medium text-slate-300">
+            <div>
+              <h2 class="text-xs uppercase tracking-wide text-slate-500">Quickstart</h2>
+              <ul class="mt-3 space-y-2">
+                <li><a class="hover:text-white" href="#getting-started">Getting started</a></li>
+                <li><a class="hover:text-white" href="#architecture">Architecture overview</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="text-xs uppercase tracking-wide text-slate-500">Language</h2>
+              <ul class="mt-3 space-y-2">
+                <li><a class="hover:text-white" href="#language">Syntax essentials</a></li>
+                <li><a class="hover:text-white" href="#language-modules">Modules &amp; exports</a></li>
+                <li><a class="hover:text-white" href="#language-control">Control flow</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="text-xs uppercase tracking-wide text-slate-500">Tooling</h2>
+              <ul class="mt-3 space-y-2">
+                <li><a class="hover:text-white" href="#cli">CLI reference</a></li>
+                <li><a class="hover:text-white" href="#packages">Package manager</a></li>
+                <li><a class="hover:text-white" href="#runtime">Runtime API</a></li>
+                <li><a class="hover:text-white" href="#tooling">Workflows</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="text-xs uppercase tracking-wide text-slate-500">Standard Library</h2>
+              <ul class="mt-3 space-y-2">
+                <li><a class="hover:text-white" href="#stdlib">Overview</a></li>
+                <li><a class="hover:text-white" href="#std-io"><code>std.io</code></a></li>
+                <li><a class="hover:text-white" href="#std-http"><code>std.http</code></a></li>
+                <li><a class="hover:text-white" href="#std-memory"><code>std.memory</code></a></li>
+              </ul>
+            </div>
+          </nav>
+        </aside>
+
+        <main class="content mx-auto w-full max-w-5xl px-6 py-16 lg:px-12">
+          <section id="getting-started" class="scroll-mt-24">
+            <div class="mb-8 flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-indigo-300">
+              <span class="inline-flex h-2 w-2 rounded-full bg-indigo-400"></span>
+              Getting started
+            </div>
+            <div class="grid gap-8 lg:grid-cols-[2fr,1fr]">
+              <div class="space-y-5 text-slate-200">
+                <p>
+                  Install TRIF via the platform-specific bootstrap scripts documented in <code>README.md</code>. The installer provides the
+                  native C++ compiler, ObjC shims for Apple platforms, runtime adapters, and the <code>trif</code>/<code>trifc</code> CLIs.
+                </p>
+                <ol class="list-decimal space-y-3 pl-6">
+                  <li>Run <code>trif create my-app --template web</code> to scaffold a project with batteries-included defaults.</li>
+                  <li>Use <code>trif run src/main.trif</code> for an immediate execution path or <code>trif compile src/main.trif -t javascript</code> to emit browser-ready bundles.</li>
+                  <li>Switch the compiler target with <code>trifc --target cpp|python|javascript</code> while staying on the native pipeline.</li>
+                </ol>
+                <p>
+                  Projects rely on the <code>trif.json</code> manifest. Configure aggressive error handling by setting <code>"diagnostics": { "mode": "aggressive" }</code>
+                  to fail fast on warnings, ambiguous types, or unsafe memory calls.
+                </p>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
+                <h3 class="text-base font-semibold text-white">Hello server</h3>
+                <p class="mt-2">A minimal HTTP service compiled directly to C++.</p>
+                <pre class="mt-4 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>import std.http as http;
+import std.io as io;
+
+const server = http.createServer({ port: 8080 });
+
+server.get("/", function(ctx) {
+    return ctx.json({ status: "ok", at: http.now() });
+});
+
+export function main() {
+    io.println("API ready on http://localhost:8080");
+    server.listen();
+}</code></pre>
+              </div>
+            </div>
+          </section>
+
+          <section id="architecture" class="mt-20 space-y-5">
+            <div class="flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-indigo-300">
+              <span class="inline-flex h-2 w-2 rounded-full bg-indigo-400"></span>
+              Architecture overview
+            </div>
+            <p class="text-slate-200">
+              The native toolchain is implemented in modern C++ for maximum throughput. The compilation flow tokenises and parses TRIF source,
+              produces an intermediate representation, and emits target-specific code generators. ObjC bridges expose Apple platform toolchains
+              while keeping all critical logic in C++. Python and Node.js remain downstream compilation targets—produced from native emitters
+              without executing any Python during compilation.
+            </p>
+            <dl class="grid gap-6 lg:grid-cols-3">
+              <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+                <dt class="text-sm font-semibold text-indigo-200">Lexer &amp; parser</dt>
+                <dd class="mt-2 text-sm text-slate-300">Implements streaming tokenisation and Pratt-style parsing with detailed diagnostics for aggressive error mode.</dd>
+              </div>
+              <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+                <dt class="text-sm font-semibold text-indigo-200">Code generation</dt>
+                <dd class="mt-2 text-sm text-slate-300">Native C++ emitter produces optimised binaries; Python and JavaScript backends share the same IR lowering for parity.</dd>
+              </div>
+              <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+                <dt class="text-sm font-semibold text-indigo-200">Tooling surface</dt>
+                <dd class="mt-2 text-sm text-slate-300">The <code>trifc</code> CLI orchestrates builds, incremental caching, diagnostics, and bundling through a unified interface.</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section id="language" class="mt-24 space-y-6">
+            <h2 class="text-3xl font-semibold text-white">Language guide</h2>
+            <p class="text-slate-300">
+              TRIF retains the readability of JavaScript while introducing deterministic semantics and aggressive error detection. Use <code>let</code> for mutable bindings, <code>const</code> for immutability,
+              and prefer expression-oriented flow when authoring high-performance kernels.
+            </p>
+            <div class="grid gap-8 lg:grid-cols-2">
+              <article class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">Syntax essentials</h3>
+                <ul class="mt-4 space-y-3 text-sm text-slate-200">
+                  <li><code>let</code> declares mutable bindings; <code>const</code> declares immutable values.</li>
+                  <li>Functions use <code>function name(args) { ... }</code> with explicit <code>return</code> statements.</li>
+                  <li>Primitive types cover numbers, strings, booleans, <code>null</code>, lists <code>[...]</code>, and object literals <code>{ key: value }</code>.</li>
+                  <li><code>spawn</code> dispatches asynchronous work via the runtime thread helpers.</li>
+                  <li>Aggressive diagnostics flag shadowed bindings, implicit coercions, or unsafe pointer arithmetic.</li>
+                </ul>
+                <pre class="mt-5 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>let counter = 0;
+const banner = "Ready";
+
+function tick(step) {
+    counter = counter + step;
+    return counter;
+}</code></pre>
+              </article>
+              <article id="language-modules" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">Modules &amp; exports</h3>
+                <ul class="mt-4 space-y-3 text-sm text-slate-200">
+                  <li>Import modules with <code>import std.io as io;</code> or <code>import "./util.trif";</code>.</li>
+                  <li>ES module syntax is supported: <code>import main, { helper as alias } from "./helpers";</code>.</li>
+                  <li><code>export function</code> and <code>export let</code> expose named bindings; <code>export default</code> publishes a single value.</li>
+                  <li>Re-export modules via <code>export { name } from "./other";</code> or <code>export * from "./shared";</code>.</li>
+                </ul>
+                <pre class="mt-5 overflow-x-auto rounded-xl bg-slate-950/70 p-4 text-xs leading-relaxed text-slate-200"><code>import std.io as io;
+import logger, { formatTime } from "./time";
+
+export function main() {
+    io.println(formatTime(logger.now()));
+}</code></pre>
+              </article>
+            </div>
+            <article id="language-control" class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h3 class="text-xl font-semibold text-white">Control flow &amp; patterns</h3>
+              <ul class="mt-4 space-y-3 text-sm text-slate-200">
+                <li>Pattern matching uses chained <code>if/else</code> or guard loops with <code>while</code>.</li>
+                <li><code>for (let item in collection)</code> iterates arrays, lists, and runtime-provided iterables.</li>
+                <li>Use destructuring-style assignments with property reads: <code>let host = config.host;</code>.</li>
+                <li>Exceptions map to the runtime target: native <code>std::runtime_error</code> in C++, Python exceptions when targeting Python, and <code>Error</code> objects when targeting Node.js.</li>
+              </ul>
+            </article>
+          </section>
+
+          <section id="cli" class="mt-24 space-y-8">
+            <h2 class="text-3xl font-semibold text-white">CLI reference</h2>
+            <p class="text-slate-300">
+              The <code>trif</code> executable bundles compilation, scaffolding, documentation, and the interactive REPL. The <code>trifc</code> binary exposes the low-level native compiler directly.
+            </p>
+            <div class="overflow-hidden rounded-2xl border border-slate-800">
+              <table class="w-full table-fixed border-collapse text-left text-sm">
+                <thead class="bg-slate-900/70 text-xs uppercase tracking-wide text-slate-400">
+                  <tr>
+                    <th class="px-4 py-3">Command</th>
+                    <th class="px-4 py-3">Description</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif compile &lt;source&gt; [-t target]</td>
+                    <td class="px-4 py-4">Compile a TRIF file to C++, Python, or JavaScript.
+                      <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                        <li><code>-t/--target</code> accepts <code>cpp</code>, <code>python</code>, or <code>javascript</code>.</li>
+                        <li><code>-o/--output</code> writes the compiled artifact to a custom path.</li>
+                        <li><code>--encrypt &lt;passphrase&gt;</code> applies simple XOR obfuscation for distribution builds.</li>
+                        <li><code>--no-opt</code> disables optimiser passes for easier debugging.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif run &lt;source&gt; [-- args...]</td>
+                    <td class="px-4 py-4">Compile a file to Python in-memory and execute immediately.
+                      <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                        <li>Arguments after <code>--</code> are forwarded to <code>main()</code>.</li>
+                        <li>Use <code>--no-opt</code> to bypass optimisation in aggressive error mode.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif create &lt;name&gt; [--template kind]</td>
+                    <td class="px-4 py-4">Scaffold new workspaces with templates for <code>lib</code>, <code>web</code>, <code>mobile</code>, <code>memory</code>, or <code>reverse</code>.
+                      <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                        <li>Templates configure <code>trif.json</code>, entry points, and starter tests.</li>
+                        <li>Web projects include Express-style HTTP servers; mobile templates emit PWA-ready manifests.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif docs</td>
+                    <td class="px-4 py-4">Launches this handbook from <code>docs/index.html</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif repl</td>
+                    <td class="px-4 py-4">Interactive shell that compiles lines on the fly. Use <code>:quit</code> to exit.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="packages" class="mt-24 space-y-8">
+            <h2 class="text-3xl font-semibold text-white">Package manager (TrifPM)</h2>
+            <p class="text-slate-300">
+              TrifPM is a next-generation package manager prioritising speed, reproducibility, and security. Dependency resolution is written in C++ with an optimised SAT solver, yielding faster graphs than npm while guaranteeing deterministic lockfiles.
+            </p>
+            <div class="overflow-hidden rounded-2xl border border-slate-800">
+              <table class="w-full table-fixed border-collapse text-left text-sm">
+                <thead class="bg-slate-900/70 text-xs uppercase tracking-wide text-slate-400">
+                  <tr>
+                    <th class="px-4 py-3">Command</th>
+                    <th class="px-4 py-3">Description</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package init [path]</td>
+                    <td class="px-4 py-4">Create <code>trif.json</code>, <code>src/main.trif</code>, and an empty <code>trif_pkg/</code> directory.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package install &lt;name[@version]&gt;</td>
+                    <td class="px-4 py-4">Install dependencies from the active registry into <code>trif_pkg/</code>.
+                      <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                        <li>Offline registries are supported via bundled indexes.</li>
+                        <li>Source archives are compiled to native IR before linking, ensuring consistent builds.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package install-local &lt;path&gt;</td>
+                    <td class="px-4 py-4">Install from a local directory without registry calls.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package publish [path]</td>
+                    <td class="px-4 py-4">Bundle the package and push it to <code>~/.trif/registry</code>.
+                      <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                        <li>Creates a <code>package.zip</code> and metadata entry in <code>index.json</code>.</li>
+                        <li>Sign releases with Ed25519 keys for tamper detection.</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package list</td>
+                    <td class="px-4 py-4">Display installed packages and versions inside <code>trif_pkg/</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 align-top font-mono text-xs text-indigo-200">trif package use &lt;url&gt;</td>
+                    <td class="px-4 py-4">Switch the active registry endpoint. Mirrors can be HTTP, file-based, or offline archives.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="stdlib" class="mt-24 space-y-10">
+            <h2 class="text-3xl font-semibold text-white">Standard library</h2>
+            <p class="text-slate-300">
+              Every module ships with the toolchain and is available without additional installation. Imports resolve immediately after running <code>trif package install</code> for third-party dependencies.
+            </p>
+            <div id="std-io" class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h3 class="text-2xl font-semibold text-white"><code>std.io</code></h3>
+              <p class="text-sm text-slate-300">Streamlined file and console utilities.</p>
+              <div class="overflow-hidden rounded-xl border border-slate-800/80">
+                <table class="w-full border-collapse text-left text-sm">
+                  <thead class="bg-slate-950/60 text-xs uppercase tracking-wide text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3">API</th>
+                      <th class="px-4 py-3">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">println(value: Any) -&gt; None</td>
+                      <td class="px-4 py-3">Print a value to stdout immediately.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">read_text(path: str) -&gt; str</td>
+                      <td class="px-4 py-3">Read a UTF-8 file into memory.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">write_text(path: str, data: str) -&gt; None</td>
+                      <td class="px-4 py-3">Write a UTF-8 file, creating parents as needed.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">read_json(path: str) -&gt; Any</td>
+                      <td class="px-4 py-3">Parse JSON from disk using <code>read_text</code>.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">write_json(path: str, data: Any) -&gt; None</td>
+                      <td class="px-4 py-3">Pretty-print JSON to disk.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">prompt(message: str) -&gt; str</td>
+                      <td class="px-4 py-3">Request console input from the user.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="std-http" class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h3 class="text-2xl font-semibold text-white"><code>std.http</code></h3>
+              <p class="text-sm text-slate-300">Express-style HTTP primitives for services and APIs.</p>
+              <div class="overflow-hidden rounded-xl border border-slate-800/80">
+                <table class="w-full border-collapse text-left text-sm">
+                  <thead class="bg-slate-950/60 text-xs uppercase tracking-wide text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3">API</th>
+                      <th class="px-4 py-3">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">class HttpServer(host: str = '0.0.0.0', port: int = 5000)</td>
+                      <td class="px-4 py-3">Express-style HTTP server with a built-in router.
+                        <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                          <li><code>get/post/put/delete(path, handler)</code> register route handlers receiving <code>HttpContext</code>.</li>
+                          <li><code>listen()</code> boots a background server thread; <code>close()</code> shuts it down gracefully.</li>
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">class HttpContext</td>
+                      <td class="px-4 py-3">Wrapper around the request with helpers for crafting responses.
+                        <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                          <li><code>text(value, status=200)</code>, <code>html(markup)</code>, and <code>json(payload)</code> return <code>HttpResponse</code>.</li>
+                          <li><code>send(body, status=200, content_type)</code> streams arbitrary bytes.</li>
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">createServer(config?) -&gt; HttpServer</td>
+                      <td class="px-4 py-3">Factory respecting <code>host</code> and <code>port</code> keys.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">now() -&gt; str</td>
+                      <td class="px-4 py-3">Return the current timestamp (ISO 8601).</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">class HttpResponse</td>
+                      <td class="px-4 py-3">Lightweight data class storing status, headers, and body.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="std-memory" class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h3 class="text-2xl font-semibold text-white"><code>std.memory</code></h3>
+              <p class="text-sm text-slate-300">Advanced memory operations for high-performance workloads.</p>
+              <div class="overflow-hidden rounded-xl border border-slate-800/80">
+                <table class="w-full border-collapse text-left text-sm">
+                  <thead class="bg-slate-950/60 text-xs uppercase tracking-wide text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3">API</th>
+                      <th class="px-4 py-3">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">openBuffer(size: int) -&gt; MemoryRegion</td>
+                      <td class="px-4 py-3">Allocate a zero-filled buffer for manual reads/writes.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">class MemoryRegion</td>
+                      <td class="px-4 py-3">Typed reads and writes on a mutable buffer.
+                        <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+                          <li><code>write32(offset, value)</code> / <code>read32(offset)</code> access 32-bit unsigned integers.</li>
+                          <li><code>write_bytes(offset, data)</code> and <code>read_bytes(offset, length)</code> move arbitrary slices.</li>
+                          <li><code>fill(value)</code> initialises all bytes; <code>search(pattern)</code> finds sub-sequences.</li>
+                          <li><code>to_bytes()</code> exports the raw data as immutable bytes.</li>
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 font-mono text-xs text-indigo-200">formatHex(value: int, width: int = 8) -&gt; str</td>
+                      <td class="px-4 py-3">Render values as zero-padded hexadecimal strings.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h3 class="text-2xl font-semibold text-white">Additional modules</h3>
+              <div class="grid gap-6 lg:grid-cols-2">
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.net</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>start_tcp_server(host, port, handler)</code> launches a threaded TCP server.</li>
+                    <li><code>send_tcp_message(host, port, message)</code> connects and sends UTF-8 payloads.</li>
+                    <li><code>broadcast_json(host, port, payload)</code> serialises JSON and delivers via TCP.</li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.data</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>load_csv(path)</code> reads CSV rows into dictionaries.</li>
+                    <li><code>save_csv(path, rows)</code> persists dictionaries with headers.</li>
+                    <li><code>filter_rows(rows, predicate)</code> returns rows that match the predicate.</li>
+                    <li><code>map_rows(rows, mapper)</code> transforms rows using a mapper function.</li>
+                    <li><code>to_json(data)</code> pretty-prints JSON.</li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.threading</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>spawn(fn)</code> schedules work on the shared thread pool.</li>
+                    <li><code>parallel_map(fn, items)</code> maps concurrently across items.</li>
+                    <li><code>sleep(seconds)</code> blocks the current thread.</li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.mobile</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>createApp(config?)</code> prepares a mobile app container.</li>
+                    <li><code>MobileApp.screen(name, builder)</code> registers declarative screens.</li>
+                    <li><code>MobileApp.export()</code> emits a bundle consumed by <code>mobile.build</code>.</li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.reverse</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>inspectExecutable(path)</code> extracts section metadata from ELF/PE binaries.</li>
+                    <li><code>hexdump(data, width)</code> produces classic hex + ASCII dumps.</li>
+                    <li><code>ExecutableInfo</code> exposes <code>path</code>, <code>format</code>, and <code>sections</code>.</li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-slate-800/80 bg-slate-950/40 p-5">
+                  <h4 class="text-lg font-semibold text-indigo-200"><code>std.managers</code></h4>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    <li><code>TaskManager</code> queues named callables and executes sequentially.</li>
+                    <li><code>ResourceManager</code> pairs manual resource acquisition/release callbacks.</li>
+                    <li><code>LifecycleManager</code> coordinates ordered lifecycle phases.</li>
+                    <li><code>ResourcePool</code> manages reusable connections with <code>acquire</code>/<code>release</code>.</li>
+                    <li><code>PipelineManager</code> composes ordered transformation steps.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="runtime" class="mt-24 space-y-8">
+            <h2 class="text-3xl font-semibold text-white">Runtime API</h2>
+            <p class="text-slate-300">
+              The runtime adapters enable embedding TRIF output into host applications. The Python runtime powers execution across macOS, Linux, and Windows; the Node.js bridge leverages ECMAScript modules; the native runtime links directly with C++ targets. Diagnostics integrate with aggressive mode to surface cross-runtime issues.
+            </p>
+            <div class="overflow-hidden rounded-2xl border border-slate-800">
+              <table class="w-full table-fixed border-collapse text-left text-sm">
+                <thead class="bg-slate-900/70 text-xs uppercase tracking-wide text-slate-400">
+                  <tr>
+                    <th class="px-4 py-3">API</th>
+                    <th class="px-4 py-3">Description</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-900/60 bg-slate-900/40 text-slate-200">
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.import_module(name: str) -&gt; ModuleProxy</td>
+                    <td class="px-4 py-4">Resolve stdlib modules, compiled artefacts, or on-demand <code>.trif</code> modules under <code>trif_pkg/</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.execute_python(code: str, argv: list[str] | None = None) -&gt; None</td>
+                    <td class="px-4 py-4">Execute compiled Python code inside a sandboxed module and run <code>main()</code> or the default export.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.spawn(callable) -&gt; None</td>
+                    <td class="px-4 py-4">Launch a daemon thread executing <code>callable</code> (used by <code>spawn</code> statements).</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.register_module_exports(name, exports, default) -&gt; None</td>
+                    <td class="px-4 py-4">Expose export tables to the module proxy system for interop.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.extract_export(proxy, name) -&gt; Any</td>
+                    <td class="px-4 py-4">Retrieve a named export from a module proxy.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.extract_default(proxy) -&gt; Any</td>
+                    <td class="px-4 py-4">Return the default export if supplied; otherwise return the wrapped module.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">Runtime.prepare_project_environment(root: Path) -&gt; None</td>
+                    <td class="px-4 py-4">Add project roots and <code>trif_pkg/</code> directories to the module search path.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-4 font-mono text-xs text-indigo-200">ModuleProxy.get_export(name) -&gt; Any</td>
+                    <td class="px-4 py-4">Lookup helper for dynamic module inspection.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="tooling" class="mt-24 space-y-6">
+            <h2 class="text-3xl font-semibold text-white">Tooling &amp; workflows</h2>
+            <div class="grid gap-6 lg:grid-cols-2">
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">High-performance computing</h3>
+                <p class="mt-3 text-sm text-slate-300">
+                  Use <code>std.memory</code> alongside the C++ backend for zero-copy buffer operations. The compiler emits intrinsics for SIMD and integrates with platform-specific allocators when available.
+                </p>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">Web &amp; mobile</h3>
+                <p class="mt-3 text-sm text-slate-300">
+                  Compile to JavaScript for browser and Node.js targets while reusing the same standard library contracts. Mobile builds export manifests for PWA shells or hybrid wrappers.
+                </p>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">Reverse engineering</h3>
+                <p class="mt-3 text-sm text-slate-300">
+                  Combine <code>std.reverse</code>, <code>std.memory</code>, and manager utilities to orchestrate binary inspection pipelines.
+                </p>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <h3 class="text-xl font-semibold text-white">Examples</h3>
+                <p class="mt-3 text-sm text-slate-300">
+                  Explore the <code>examples/</code> directory for ready-to-run templates—including offline-installable packages, HPC kernels, and CLI utilities demonstrating aggressive error diagnostics.
+                </p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="border-t border-slate-900 bg-slate-950/70 py-8 text-sm text-slate-500">
+        <div class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6">
+          <p>&copy; <span class="text-slate-300">TRIF</span> Compiler Project. All rights reserved.</p>
+          <a href="#getting-started" class="inline-flex items-center gap-2 rounded-full border border-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-indigo-400 hover:text-white">
+            Back to top
+          </a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
