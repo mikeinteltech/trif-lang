@@ -10,11 +10,14 @@ from .ast_nodes import (
     Boolean,
     Call,
     DictLiteral,
+    ExportDefault,
+    ExportNames,
     Expression,
     For,
     FunctionDef,
     If,
     Import,
+    ImportFrom,
     Let,
     ListLiteral,
     Module,
@@ -40,6 +43,8 @@ class PythonGenerator(BaseGenerator):
     def __init__(self) -> None:
         self.lines: List[str] = []
         self.indent = 0
+        self.temp_index = 0
+        self._temp_index = 0
 
     def emit(self, line: str) -> None:
         self.lines.append("    " * self.indent + line)
@@ -61,9 +66,15 @@ class PythonGenerator(BaseGenerator):
         self.indent -= 1
         self.indent -= 1
         self.emit("from trif_lang.runtime import runtime")
+        self.emit("__trif_exports__ = {}")
+        self.emit("__trif_default_export__ = None")
         self.emit("")
         for stmt in module.body:
             self.visit(stmt)
+        self.emit("")
+        self.emit(
+            "runtime.register_module_exports(__name__, __trif_exports__, __trif_default_export__)"
+        )
         self.emit("")
         self.emit("if __name__ == '__main__':")
         self.indent += 1
@@ -85,11 +96,28 @@ class PythonGenerator(BaseGenerator):
             self.visit(stmt)
 
     def visit_Import(self, node: Import):
-        target = node.alias or node.module
+        target = node.alias or node.module.replace(".", "_").replace("-", "_")
         self.emit(f"{target} = runtime.import_module('{node.module}')")
 
+    def visit_ImportFrom(self, node: ImportFrom):
+        temp = self._temp("import")
+        self.emit(f"{temp} = runtime.import_module('{node.module}')")
+        if node.namespace:
+            self.emit(f"{node.namespace} = {temp}")
+        if node.default:
+            self.emit(f"{node.default} = runtime.extract_default({temp})")
+        for source, alias in node.names:
+            self.emit(f"{alias} = runtime.extract_export({temp}, '{source}')")
+
     def visit_Let(self, node: Let):
-        self.emit(f"{node.name} = {self.visit_expression(node.value)}")
+        assignment = f"{node.name} = {self.visit_expression(node.value)}"
+        if not node.mutable:
+            assignment += "  # const"
+        self.emit(assignment)
+        if node.exported:
+            self.emit(f"__trif_exports__['{node.name}'] = {node.name}")
+        if node.is_default:
+            self.emit(f"__trif_default_export__ = {node.name}")
 
     def visit_Assign(self, node: Assign):
         self.emit(f"{self.visit_expression(node.target)} = {self.visit_expression(node.value)}")
@@ -103,6 +131,10 @@ class PythonGenerator(BaseGenerator):
         if not node.body or not isinstance(node.body[-1], Return):
             self.emit("return None")
         self.indent -= 1
+        if node.exported:
+            self.emit(f"__trif_exports__['{node.name}'] = {node.name}")
+        if node.is_default:
+            self.emit(f"__trif_default_export__ = {node.name}")
         self.emit("")
 
     def visit_Return(self, node: Return):
@@ -110,6 +142,19 @@ class PythonGenerator(BaseGenerator):
             self.emit("return None")
         else:
             self.emit(f"return {self.visit_expression(node.value)}")
+
+    def visit_ExportNames(self, node: ExportNames):
+        if node.source:
+            temp = self._temp("export")
+            self.emit(f"{temp} = runtime.import_module('{node.source}')")
+            for source, alias in node.names:
+                self.emit(f"__trif_exports__['{alias}'] = runtime.extract_export({temp}, '{source}')")
+        else:
+            for local, alias in node.names:
+                self.emit(f"__trif_exports__['{alias}'] = {local}")
+
+    def visit_ExportDefault(self, node: ExportDefault):
+        self.emit(f"__trif_default_export__ = {self.visit_expression(node.value)}")
 
     def visit_If(self, node: If):
         self.emit(f"if {self.visit_expression(node.test)}:")
@@ -201,6 +246,10 @@ class PythonGenerator(BaseGenerator):
         )
         return "{" + pairs + "}"
 
+    def _temp(self, prefix: str) -> str:
+        self._temp_index += 1
+        return f"__trif_{prefix}_{self._temp_index}"
+
 
 class JavaScriptGenerator(BaseGenerator):
     """Generate JavaScript code from a Trif module."""
@@ -214,8 +263,11 @@ class JavaScriptGenerator(BaseGenerator):
 
     def generate(self, module: Module) -> str:
         self.emit("import { runtime } from './trif_runtime.mjs';")
+        self.emit("const __trifExports = {};")
+        self.emit("let __trifDefault = null;")
         for stmt in module.body:
             self.visit(stmt)
+        self.emit("runtime.registerModuleExports(__trifExports, __trifDefault);")
         if not any(isinstance(stmt, FunctionDef) and stmt.name == "main" for stmt in module.body):
             self.emit("runtime.defaultEntryPoint(globalThis);")
         return "\n".join(self.lines)
@@ -230,11 +282,26 @@ class JavaScriptGenerator(BaseGenerator):
         raise TypeError(f"Unsupported node {type(node).__name__}")
 
     def visit_Import(self, node: Import):
-        target = node.alias or node.module
+        target = node.alias or node.module.replace(".", "_").replace("-", "_")
         self.emit(f"const {target} = runtime.importModule('{node.module}');")
 
+    def visit_ImportFrom(self, node: ImportFrom):
+        temp = self._temp("import")
+        self.emit(f"const {temp} = runtime.importModule('{node.module}');")
+        if node.namespace:
+            self.emit(f"const {node.namespace} = {temp};")
+        if node.default:
+            self.emit(f"const {node.default} = runtime.extractDefault({temp});")
+        for source, alias in node.names:
+            self.emit(f"const {alias} = runtime.extractExport({temp}, '{source}');")
+
     def visit_Let(self, node: Let):
-        self.emit(f"let {node.name} = {self.visit_expression(node.value)};")
+        keyword = "let" if node.mutable else "const"
+        self.emit(f"{keyword} {node.name} = {self.visit_expression(node.value)};")
+        if node.exported:
+            self.emit(f"__trifExports['{node.name}'] = {node.name};")
+        if node.is_default:
+            self.emit(f"__trifDefault = {node.name};")
 
     def visit_Assign(self, node: Assign):
         self.emit(f"{self.visit_expression(node.target)} = {self.visit_expression(node.value)};")
@@ -249,12 +316,29 @@ class JavaScriptGenerator(BaseGenerator):
             self.emit("return null;")
         self.indent -= 1
         self.emit("}")
+        if node.exported:
+            self.emit(f"__trifExports['{node.name}'] = {node.name};")
+        if node.is_default:
+            self.emit(f"__trifDefault = {node.name};")
 
     def visit_Return(self, node: Return):
         if node.value is None:
             self.emit("return null;")
         else:
             self.emit(f"return {self.visit_expression(node.value)};")
+
+    def visit_ExportNames(self, node: ExportNames):
+        if node.source:
+            temp = self._temp("export")
+            self.emit(f"const {temp} = runtime.importModule('{node.source}');")
+            for source, alias in node.names:
+                self.emit(f"__trifExports['{alias}'] = runtime.extractExport({temp}, '{source}');")
+        else:
+            for local, alias in node.names:
+                self.emit(f"__trifExports['{alias}'] = {local};")
+
+    def visit_ExportDefault(self, node: ExportDefault):
+        self.emit(f"__trifDefault = {self.visit_expression(node.value)};")
 
     def visit_If(self, node: If):
         self.emit(f"if ({self.visit_expression(node.test)}) {{")
@@ -345,6 +429,10 @@ class JavaScriptGenerator(BaseGenerator):
             f"[{self.visit_expression(k)}, {self.visit_expression(v)}]" for k, v in node.pairs
         )
         return f"runtime.makeMap([{pairs}])"
+
+    def _temp(self, prefix: str) -> str:
+        self.temp_index += 1
+        return f"__trif_{prefix}_{self.temp_index}"
 
 
 __all__ = ["PythonGenerator", "JavaScriptGenerator"]

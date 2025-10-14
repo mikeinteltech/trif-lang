@@ -1,0 +1,9 @@
+import std.io as io;
+
+const messages = ["Welcome to Trif", "This package was installed from the bundled registry"];
+
+export function main() {
+    for message in messages {
+        io.println(message);
+    }
+}

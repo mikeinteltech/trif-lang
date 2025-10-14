@@ -16,6 +16,14 @@ class Module(Node):
 
 
 @dataclass
+class ImportFrom(Node):
+    module: str
+    names: List[tuple[str, str]]
+    default: Optional[str] = None
+    namespace: Optional[str] = None
+
+
+@dataclass
 class Import(Node):
     module: str
     alias: Optional[str] = None
@@ -25,6 +33,9 @@ class Import(Node):
 class Let(Node):
     name: str
     value: "Expression"
+    mutable: bool = True
+    exported: bool = False
+    is_default: bool = False
 
 
 @dataclass
@@ -38,6 +49,19 @@ class FunctionDef(Node):
     name: str
     params: List[str]
     body: List[Node]
+    exported: bool = False
+    is_default: bool = False
+
+
+@dataclass
+class ExportNames(Node):
+    names: List[tuple[str, str]]
+    source: Optional[str] = None
+
+
+@dataclass
+class ExportDefault(Node):
+    value: "Expression"
 
 
 @dataclass
@@ -138,6 +162,7 @@ class DictLiteral(Expression):
 __all__ = [
     "Module",
     "Import",
+    "ImportFrom",
     "Let",
     "Assign",
     "FunctionDef",
@@ -158,4 +183,6 @@ __all__ = [
     "Attribute",
     "ListLiteral",
     "DictLiteral",
+    "ExportNames",
+    "ExportDefault",
 ]

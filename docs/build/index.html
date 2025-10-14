@@ -1,66 +1,144 @@
 
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="utf-8" />
-                <title>Trif Language Documentation</title>
-                <style>
-                  body { font-family: sans-serif; max-width: 960px; margin: auto; padding: 2rem; }
-                  pre { background: #111; color: #eee; padding: 1rem; }
-                  code { background: #f4f4f4; padding: 0.2rem 0.4rem; }
-                  nav a { margin-right: 1rem; }
-                </style>
-              </head>
-              <body>
-                <h1>Trif Language</h1>
-                <p>Trif is a multiparadigm language that blends the ergonomics of Python with
-                the modularity of Node.js. It compiles to Python or JavaScript and ships with a
-                batteries-included standard library for desktop, data, and web development.</p>
-                <nav>
-                  <a href="#getting-started">Getting started</a>
-                  <a href="#language">Language tour</a>
-                  <a href="#packages">Package manager</a>
-                  <a href="#interop">Interoperability</a>
-                </nav>
-                <section id="getting-started">
-                  <h2>Getting started</h2>
-                  <ol>
-                    <li>Create a file <code>hello.trif</code>.</li>
-                    <li>Write the following:</li>
-                  </ol>
-                  <pre><code>fn main() {
-    print("Hello, Trif!")
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Trif Language Handbook</title>
+    <style>
+      body { font-family: 'Segoe UI', system-ui, sans-serif; max-width: 1100px; margin: auto; padding: 2rem; line-height: 1.7; }
+      pre { background: #0f172a; color: #e2e8f0; padding: 1rem; overflow-x: auto; border-radius: 8px; }
+      code { background: #e2e8f0; padding: 0.2rem 0.4rem; border-radius: 4px; }
+      nav { margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; }
+      nav a { text-decoration: none; color: #2563eb; font-weight: 600; }
+      table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
+      th, td { border: 1px solid #cbd5f5; padding: 0.6rem; text-align: left; vertical-align: top; }
+      h1, h2, h3 { color: #0f172a; }
+      section { margin-bottom: 3rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Trif Language Handbook</h1>
+    <p>Trif delivers a JavaScript-inspired developer experience with native deployment targets and no runtime dependencies
+    beyond the toolchain itself. Use this handbook as an exhaustive reference for the language syntax, CLI, package manager,
+    runtime, and standard library modules.</p>
+    <nav>
+      <a href="#getting-started">Getting started</a>
+      <a href="#language">Language guide</a>
+      <a href="#cli">CLI reference</a>
+      <a href="#packages">Package manager</a>
+      <a href="#stdlib">Standard library</a>
+      <a href="#runtime">Runtime API</a>
+      <a href="#tooling">Tooling & workflows</a>
+    </nav>
+
+    <section id="getting-started">
+      <h2>Getting started</h2>
+      <ol>
+        <li>Install Trif with the platform script in <code>README.md</code> (macOS/Linux shell or Windows PowerShell).</li>
+        <li>Run <code>trif create my-app --template web</code> to scaffold a project.</li>
+        <li>Start developing with <code>trif run src/main.trif</code> or <code>trif compile src/main.trif -t javascript</code>.</li>
+      </ol>
+      <pre><code>import std.http as http;
+import std.io as io;
+
+const server = http.createServer({ port: 8080 });
+
+server.get(&quot;/&quot;, function(ctx) {
+    return ctx.json({ status: &quot;ok&quot;, at: http.now() });
+});
+
+export function main() {
+    io.println(&quot;API ready on http://localhost:8080&quot;);
+    server.listen();
 }
 </code></pre>
-                  <p>Run with <code>python -m trif_lang run hello.trif</code>.</p>
-                </section>
-                <section id="language">
-                  <h2>Language tour</h2>
-                  <p>Trif supports <strong>functions</strong>, <strong>loops</strong>, <strong>conditions</strong>,
-                  <strong>parallelism</strong> via <code>spawn</code> and high-level data structures.</p>
-                  <pre><code>import std.io as io
+    </section>
 
-fn greet(name) {
-    io.println("Hi " + name)
-}
+    <section id="language">
+      <h2>Language guide</h2>
+      <h3>Syntax essentials</h3>
+<ul><li><code>let</code> declares mutable bindings, <code>const</code> declares immutable ones.</li><li>Functions use <code>function name(param, ...)</code> blocks with braces and <code>return</code>.</li><li>Numbers, strings, booleans, <code>null</code>, lists <code>[...]</code>, and object literals <code>{ key: value }</code> mirror JavaScript.</li><li><code>if</code>, <code>while</code>, and <code>for (let item in list)</code> match familiar syntax.</li><li><code>spawn</code> executes a call asynchronously using the runtime thread helpers.</li></ul>
+<pre><code>let counter = 0;
+const banner = &quot;Ready&quot;;
 
-fn main() {
-    let names = ["Ada", "Linus", "Margaret"]
-    for name in names {
-        spawn greet(name)
-    }
+function tick(step) {
+    counter = counter + step;
+    return counter;
 }
 </code></pre>
-                </section>
-                <section id="packages">
-                  <h2>Package manager</h2>
-                  <p>Initialise packages with <code>python -m trif_lang package init</code>. Publish to the
-                  local registry and install dependencies offline.</p>
-                </section>
-                <section id="interop">
-                  <h2>Interoperability</h2>
-                  <p>Use <code>runtime.import_module</code> to call into Python packages, or compile to JavaScript
-                  to integrate with Node.js or modern browsers.</p>
-                </section>
-              </body>
-            </html>
+<h3>Modules & exports</h3>
+<ul><li>Import entire modules with <code>import std.io as io;</code> or <code>import "./util.trif";</code>.</li><li>Use ES modules style: <code>import main, { helper as alias } from "./helpers";</code>.</li><li><code>export function</code> and <code>export let</code> expose named bindings; <code>export default</code> publishes a single default value.</li><li>Re-export modules with <code>export { name } from "./other";</code> or <code>export * from "./shared";</code>.</li></ul>
+<pre><code>import std.io as io;
+import logger, { formatTime } from &quot;./time&quot;;
+
+export function main() {
+    io.println(formatTime(logger.now()));
+}
+</code></pre>
+<h3>Control flow & patterns</h3>
+<ul><li>Pattern match with chained <code>if/else</code> or guard loops using <code>while</code>.</li><li><code>for (let item in collection)</code> iterates arrays, lists, and runtime-provided iterables.</li><li>Use destructuring-style assignments via <code>let</code> with object accessors: <code>let host = config.host;</code>.</li><li>Throw and catch Python exceptions via compiled output; integrate with <code>std.managers.ResourceManager</code> for cleanup.</li></ul>
+    </section>
+
+    <section id="cli">
+      <h2>CLI reference</h2>
+      <p>The <code>trif</code> executable bundles compilation, project scaffolding, documentation, and an interactive REPL.</p>
+      <table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>trif compile &lt;source&gt;</code></td><td>Compile a Trif file to Python, JavaScript, or bytecode.<ul><li>Use <code>-t/--target</code> to pick <code>python</code>, <code>javascript</code>, or <code>bytecode</code>.</li><li><code>-o/--output</code> writes the compiled artifact to a custom path.</li><li><code>--encrypt &lt;passphrase&gt;</code> encrypts the generated source with simple XOR obfuscation.</li><li><code>--no-opt</code> disables optimiser passes for easier debugging.</li></ul></td></tr><tr><td><code>trif run &lt;source&gt; [--no-opt] [-- args...]</code></td><td>Compile a file to Python in-memory and execute it immediately.<ul><li>Arguments after <code>--</code> are forwarded to <code>main()</code> via <code>sys.argv</code>.</li></ul></td></tr><tr><td><code>trif create &lt;name&gt; [--template lib|web|mobile|memory|reverse]</code></td><td>Scaffold a new workspace with batteries-included templates.<ul><li>Templates configure <code>trif.json</code>, <code>src/main.trif</code>, and any ancillary assets.</li><li>Web projects include an Express-style HTTP server; mobile projects emit a manifest + bundle stub.</li></ul></td></tr><tr><td><code>trif docs</code></td><td>Build this handbook at <code>docs/build/index.html</code>.</td></tr><tr><td><code>trif repl</code></td><td>Interactive shell that compiles lines on the fly. Use <code>:quit</code> to exit.</td></tr></tbody></table>
+    </section>
+
+    <section id="packages">
+      <h2>Package manager</h2>
+      <p>TrifPM mirrors npm conventions while keeping dependencies inside <code>trif_pkg/</code>. Registries can be served
+      over HTTP, selected per-project, or used completely offline via the bundled index.</p>
+      <table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>trif package init [path]</code></td><td>Create <code>trif.json</code>, <code>src/main.trif</code>, and an empty <code>trif_pkg/</code> folder.</td></tr><tr><td><code>trif package install &amp;lt;name[@version]&amp;gt;</code></td><td>Install from the active registry (offline or HTTP) into <code>trif_pkg/</code>.<ul><li>The compiler eagerly transpiles downloaded <code>.trif</code> files to Python for runtime loading.</li><li>If the spec begins with <code>file:</code> or points at a path, the package is copied locally with no registry call.</li></ul></td></tr><tr><td><code>trif package install-local &amp;lt;path&amp;gt;</code></td><td>Shorthand for installing a package from a directory without hitting the registry.</td></tr><tr><td><code>trif package publish [path]</code></td><td>Bundle the package and push it to <code>~/.trif/registry</code> for sharing.<ul><li>Creates a <code>package.zip</code> plus metadata entry in <code>index.json</code>.</li></ul></td></tr><tr><td><code>trif package list</code></td><td>Print installed packages and versions discovered in <code>trif_pkg/</code>.</td></tr><tr><td><code>trif package use &amp;lt;url&amp;gt;</code></td><td>Switch the active registry endpoint (file://, http://, https:// supported).</td></tr><tr><td><code>trif package serve [--port 4873] [--directory &amp;lt;path&amp;gt;]</code></td><td>Serve a registry directory over HTTP for npm-style workflows.</td></tr><tr><td><code>trif package offline</code></td><td>Print the bundled offline registry path (ships with <code>hello_console</code>).</td></tr></tbody></table>
+      <p>Example workflow:</p>
+      <pre><code>trif package init my-lib
+cd my-lib
+trif package install hello_console
+trif package publish
+trif package serve --port 4873</code></pre>
+    </section>
+
+    <section id="stdlib">
+      <h2>Standard library</h2>
+      <p>Every module ships with the toolchain and is available without additional installation. Imports resolve immediately
+      after running <code>trif package install</code> for third-party dependencies.</p>
+      <h3><code>std.io</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>println(value: Any) -&gt; None</code></td><td>Print a value to stdout immediately.</td></tr><tr><td><code>read_text(path: str) -&gt; str</code></td><td>Read a UTF-8 file into memory.</td></tr><tr><td><code>write_text(path: str, data: str) -&gt; None</code></td><td>Write a UTF-8 file, creating parents as needed.</td></tr><tr><td><code>read_json(path: str) -&gt; Any</code></td><td>Parse JSON from disk using <code>read_text</code>.</td></tr><tr><td><code>write_json(path: str, data: Any) -&gt; None</code></td><td>Pretty-print JSON to disk.</td></tr><tr><td><code>prompt(message: str) -&gt; str</code></td><td>Request console input from the user.</td></tr></tbody></table>
+<h3><code>std.net</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>start_tcp_server(host: str, port: int, handler) -&gt; None</code></td><td>Spawn a threaded TCP server invoking <code>handler(client, address)</code> for each connection.</td></tr><tr><td><code>send_tcp_message(host: str, port: int, message: str) -&gt; None</code></td><td>Connect and send a UTF-8 message.</td></tr><tr><td><code>broadcast_json(host: str, port: int, payload: Any) -&gt; None</code></td><td>Serialize JSON and deliver it via TCP.</td></tr></tbody></table>
+<h3><code>std.data</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>load_csv(path: str) -&gt; List[Dict[str, str]]</code></td><td>Read CSV rows into dictionaries.</td></tr><tr><td><code>save_csv(path: str, rows: Iterable[Dict[str, Any]]) -&gt; None</code></td><td>Persist dictionaries as CSV with headers.</td></tr><tr><td><code>filter_rows(rows, predicate) -&gt; List[Dict[str, Any]]</code></td><td>Return rows where <code>predicate(row)</code> is truthy.</td></tr><tr><td><code>map_rows(rows, mapper) -&gt; List[Dict[str, Any]]</code></td><td>Transform rows with <code>mapper</code>.</td></tr><tr><td><code>to_json(data: Any) -&gt; str</code></td><td>Pretty-print arbitrary data to JSON.</td></tr></tbody></table>
+<h3><code>std.threading</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>spawn(fn: () -&gt; Any) -&gt; None</code></td><td>Schedule <code>fn</code> on the shared thread pool.</td></tr><tr><td><code>parallel_map(fn, items: list[Any]) -&gt; list[Any]</code></td><td>Map concurrently using worker threads.</td></tr><tr><td><code>sleep(seconds: float) -&gt; None</code></td><td>Block the current thread for a duration.</td></tr></tbody></table>
+<h3><code>std.http</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>class HttpServer(host: str = &#x27;0.0.0.0&#x27;, port: int = 5000)</code></td><td>Express-style HTTP server with a built-in router.<ul><li><code>get/post/put/delete(path, handler)</code> register route handlers receiving <code>HttpContext</code>.</li><li><code>listen()</code> boots a background server thread; <code>close()</code> shuts it down gracefully.</li></ul></td></tr><tr><td><code>class HttpContext</code></td><td>Wrapper around the request with helpers for crafting responses.<ul><li><code>text(value, status=200)</code>, <code>html(markup)</code>, and <code>json(payload)</code> return <code>HttpResponse</code>.</li><li><code>send(body, status=200, content_type)</code> streams arbitrary bytes.</li></ul></td></tr><tr><td><code>createServer(config?) -&gt; HttpServer</code></td><td>Factory that respects <code>host</code> and <code>port</code> keys.</td></tr><tr><td><code>now() -&gt; str</code></td><td>Utility returning the current timestamp (ISO 8601).</td></tr><tr><td><code>class HttpResponse</code></td><td>Lightweight data class storing status, headers, and body.</td></tr></tbody></table>
+<h3><code>std.mobile</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>createApp(config?) -&gt; MobileApp</code></td><td>Prepare a PWA-oriented mobile app container with title/metadata settings.</td></tr><tr><td><code>class MobileApp</code></td><td>Collect screens and export a structured bundle.<ul><li><code>screen(name, builder)</code> registers screens via a callback receiving <code>MobileScreen</code>.</li><li><code>export()</code> returns the manifest consumed by <code>mobile.build</code>.</li></ul></td></tr><tr><td><code>class MobileScreen</code></td><td>Builder surface for composing UI primitives.<ul><li><code>header(text)</code>, <code>text(body)</code>, <code>button(label, action)</code> push declarative components.</li></ul></td></tr><tr><td><code>build(app, options?) -&gt; Path</code></td><td>Emit <code>bundle.json</code> with metadata, screen definitions, and platform target (default <code>pwa</code>).</td></tr></tbody></table>
+<h3><code>std.memory</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>openBuffer(size: int) -&gt; MemoryRegion</code></td><td>Allocate a zero-filled buffer for manual reads/writes.</td></tr><tr><td><code>class MemoryRegion</code></td><td>Perform typed reads and writes on a mutable buffer.<ul><li><code>write32(offset, value)</code> / <code>read32(offset)</code> access 32-bit unsigned integers.</li><li><code>write_bytes(offset, data)</code> and <code>read_bytes(offset, length)</code> move arbitrary slices.</li><li><code>fill(value)</code> initialises all bytes; <code>search(pattern)</code> finds sub-sequences.</li><li><code>to_bytes()</code> exports the raw data as immutable bytes.</li></ul></td></tr><tr><td><code>formatHex(value: int, width: int = 8) -&gt; str</code></td><td>Render values as zero-padded hexadecimal strings.</td></tr></tbody></table>
+<h3><code>std.reverse</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>inspectExecutable(path: str) -&gt; ExecutableInfo</code></td><td>Detect ELF/PE binaries and extract section metadata.</td></tr><tr><td><code>hexdump(data: bytes, width: int = 16) -&gt; str</code></td><td>Produce a traditional hex + ASCII dump.</td></tr><tr><td><code>class ExecutableInfo</code></td><td>Data class exposing <code>path</code>, <code>format</code>, and <code>sections</code> list.</td></tr></tbody></table>
+<h3><code>std.managers</code></h3>
+<table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>class TaskManager</code></td><td>Register named callables and execute them sequentially.<ul><li><code>add(name, fn)</code> queues a unit of work.</li><li><code>run_all(context=None)</code> executes tasks and returns <code>{ task, result }</code> dictionaries.</li></ul></td></tr><tr><td><code>class StateManager</code></td><td>Mutable state container with history tracking.<ul><li><code>update(**changes)</code> merges new values and records snapshots.</li><li><code>undo()</code> restores the previous snapshot if available.</li></ul></td></tr><tr><td><code>class ResourceManager</code></td><td>Pair manual resource acquisition/release callbacks.<ul><li><code>manage(enter, exit)</code> registers complementary handlers.</li><li><code>execute(action)</code> opens resources, runs <code>action(resources)</code>, and then unwinds safely.</li></ul></td></tr><tr><td><code>class EventManager</code></td><td>Publish/subscribe hub with explicit handler management.<ul><li><code>on(event, handler)</code>, <code>off(event, handler?)</code>, and <code>clear()</code> govern listeners.</li><li><code>emit(event, payload)</code> invokes handlers and returns collected results.</li></ul></td></tr><tr><td><code>class LifecycleManager</code></td><td>Coordinate ordered lifecycle phases (start, ready, stop, etc.).<ul><li><code>hook(phase, handler)</code> registers callbacks.</li><li><code>run(phase)</code> executes handlers and returns their results; <code>phases()</code> enumerates registered phases.</li></ul></td></tr><tr><td><code>class ResourcePool</code></td><td>Manage expensive resources (e.g., connections) with manual pooling.<ul><li><code>acquire()</code> returns a resource from the pool or constructs a new one until <code>max_size</code> is reached.</li><li><code>release(resource)</code> returns it to the idle queue; <code>drain()</code> disposes of all resources via the destroy callback.</li></ul></td></tr><tr><td><code>class PipelineManager</code></td><td>Compose ordered transformation steps that can be run on demand.<ul><li><code>step(handler)</code> appends a stage.</li><li><code>run(payload)</code> flows a value through all registered stages; <code>clear()</code> removes stages.</li></ul></td></tr><tr><td><code>class ConfigurationManager</code></td><td>Layer configuration dictionaries with manual overrides.<ul><li><code>push(overrides)</code> / <code>pop()</code> manage the stack of config layers.</li><li><code>get(key, default)</code> resolves values from highest-priority layer to lowest; <code>merged()</code> returns the merged view.</li></ul></td></tr></tbody></table>
+    </section>
+
+    <section id="runtime">
+      <h2>Runtime API</h2>
+      <p>The Python runtime powers execution across macOS, Linux, and Windows. These helpers are available to advanced users
+      embedding Trif into other environments or authoring custom tooling.</p>
+      <table><thead><tr><th>API</th><th>Description</th></tr></thead><tbody><tr><td><code>Runtime.import_module(name: str) -&gt; ModuleProxy</code></td><td>Resolve stdlib modules, compiled Python artefacts, or on-demand <code>.trif</code> modules under <code>trif_pkg/</code>.</td></tr><tr><td><code>Runtime.execute_python(code: str, argv: list[str] | None = None) -&gt; None</code></td><td>Execute compiled Python code inside a sandboxed module and run <code>main()</code> or the default export.</td></tr><tr><td><code>Runtime.spawn(callable) -&gt; None</code></td><td>Launch a daemon thread executing <code>callable</code> (used by the <code>spawn</code> statement).</td></tr><tr><td><code>Runtime.register_module_exports(name, exports, default) -&gt; None</code></td><td>Expose explicit export tables to the module proxy system for interop.</td></tr><tr><td><code>Runtime.extract_export(proxy, name) -&gt; Any</code></td><td>Retrieve a named export from a module proxy (used internally by compiled code).</td></tr><tr><td><code>Runtime.extract_default(proxy) -&gt; Any</code></td><td>Return the default export if supplied, otherwise the wrapped module object.</td></tr><tr><td><code>Runtime.prepare_project_environment(root: Path) -&gt; None</code></td><td>Add project roots and <code>trif_pkg/</code> directories to <code>sys.path</code> for module discovery.</td></tr><tr><td><code>ModuleProxy.get_export(name) -&gt; Any</code></td><td>Lookup helper exposed to user-land for dynamic module inspection.</td></tr></tbody></table>
+    </section>
+
+    <section id="tooling">
+      <h2>Tooling & workflows</h2>
+      <ul>
+        <li><strong>Mobile development:</strong> Use <code>std.mobile</code> to design screens and emit <code>bundle.json</code> for PWAs or hybrid shells.</li>
+        <li><strong>Web development:</strong> <code>std.http</code> delivers router-style APIs; compile to JavaScript with <code>trif compile -t javascript</code> for front-end builds.</li>
+        <li><strong>Memory tooling:</strong> <code>std.memory</code> and <code>std.reverse</code> expose buffer manipulation plus ELF/PE inspection.</li>
+        <li><strong>Reverse engineering:</strong> Combine <code>inspectExecutable</code>, <code>hexdump</code>, and the manual managers to orchestrate complex pipelines.</li>
+        <li><strong>Interop:</strong> Target native Python by default or emit JavaScript bundles for Node.js and browsers without requiring separate runtimes.</li>
+        <li><strong>Examples:</strong> Explore the <code>examples/</code> directory for ready-to-run templates, including the offline-installable <code>hello_console</code> package.</li>
+      </ul>
+    </section>
+  </body>
+</html>

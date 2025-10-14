@@ -1,0 +1,7 @@
+{
+  "name": "hello_console",
+  "version": "1.0.0",
+  "description": "A friendly console greeter for Trif",
+  "entry": "src/main.trif",
+  "dependencies": {}
+}

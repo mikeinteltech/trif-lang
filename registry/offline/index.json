@@ -1,0 +1,9 @@
+{
+  "packages": {
+    "hello_console": {
+      "1.0.0": {
+        "tarball": "packages/hello_console-1.0.0.zip"
+      }
+    }
+  }
+}

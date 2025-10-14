@@ -12,7 +12,7 @@ TOKEN_SPECIFICATION = [
     ("COMMENT", r"//[^\n]*"),
     ("MCOMMENT", r"/\*.*?\*/"),
     ("NAME", r"[A-Za-z_][A-Za-z0-9_]*"),
-    ("OP", r"==|!=|<=|>=|&&|\|\||[+\-*/%=<>!]") ,
+    ("OP", r"==|!=|<=|>=|=>|&&|\|\||[+\-*/%=<>!]") ,
     ("NEWLINE", r"\n"),
     ("SKIP", r"[ \t]+"),
     ("LPAREN", r"\("),
@@ -24,6 +24,7 @@ TOKEN_SPECIFICATION = [
     ("COMMA", r","),
     ("COLON", r":"),
     ("DOT", r"\."),
+    ("SEMICOLON", r";"),
 ]
 
 TOKEN_RE = re.compile("|".join(f"(?P<{name}>{regex})" for name, regex in TOKEN_SPECIFICATION), re.DOTALL)
@@ -31,6 +32,7 @@ TOKEN_RE = re.compile("|".join(f"(?P<{name}>{regex})" for name, regex in TOKEN_S
 KEYWORDS = {
     "let",
     "fn",
+    "function",
     "return",
     "if",
     "else",
@@ -42,6 +44,10 @@ KEYWORDS = {
     "null",
     "import",
     "as",
+    "from",
+    "const",
+    "export",
+    "default",
     "spawn",
 }
 

@@ -1,91 +1,134 @@
 # Trif Language
 
-Trif is a beginner-friendly yet powerful programming language that sits between the worlds of Python and Node.js. It compiles to Python or JavaScript, features a batteries-included standard library, and ships with a local package manager, documentation generator, and REPL.
+Trif is a batteries-included programming language that feels like modern JavaScript while executing natively across macOS, Linux, and Windows. The toolchain compiles Trif source to Python or JavaScript, bundles an npm-inspired package manager, exposes an ergonomic CLI, and ships with extensive standard libraries for web, mobile, data, memory tooling, and reverse engineering.
 
-## Features
+## Installation
 
-- **Simple syntax** inspired by modern scripting languages with explicit function blocks and familiar control-flow.
-- **Multiple backends**: transpile to Python for desktop, data, and IPC workloads or to JavaScript for browser and serverless deployments.
-- **Standard library** for I/O, networking, threading, and data processing implemented purely with the Python standard library.
-- **Concurrency** via the `spawn` statement and thread pool utilities.
-- **Package manager** with offline registry and encryption support for shipping desktop builds.
-- **Documentation tooling** producing a static site in `docs/build`.
-- **Examples** covering desktop, CLI, networking, and web targets.
-- **VS Code extension** delivering syntax highlighting and IntelliSense-like completions.
-
-## Getting started
-
-Run the CLI with Python (no external dependencies required):
+### macOS and Linux
 
 ```bash
-python -m trif_lang run examples/hello.trif
+curl -L https://example.com/trif.tar.gz | tar -xz
+cd trif-lang
+./scripts/install.sh
+export PATH="$HOME/.trif/bin:$PATH"
 ```
 
-Enter the REPL:
+The installer copies the toolchain to `~/.trif/toolchain` and creates a `trif` wrapper that launches `python -m trif_lang`. No additional dependencies are required beyond the system Python that ships with macOS and most Linux distributions.
+
+### Windows PowerShell
+
+```powershell
+cd trif-lang
+.\scripts\install.ps1
+$env:PATH = "{0};{1}" -f "$env:USERPROFILE/.trif/bin", $env:PATH
+```
+
+Invoke the CLI with `trif.ps1` from any PowerShell session.
+
+## Quick start
 
 ```bash
-python -m trif_lang repl
+trif create my-app --template web
+cd my-app
+trif run src/main.trif
 ```
 
-Compile to Python:
+Install the bundled example package (no network required):
 
 ```bash
-python -m trif_lang compile examples/hello.trif -o build/hello.py
+trif package install hello_console
 ```
 
-Compile to JavaScript (the generated file expects `js_runtime/trif_runtime.mjs` next to it):
+The package manager drops dependencies into `trif_pkg/` so you can immediately import them:
 
-```bash
-python -m trif_lang compile examples/web/frontend.trif -t javascript -o build/frontend.mjs
+```trif
+import hello_console;
+
+export function main() {
+    hello_console.main();
+}
 ```
 
-Encrypt a Python build using a passphrase:
+## CLI overview
 
-```bash
-python -m trif_lang compile examples/chat/server.trif -o build/server.py --encrypt supersecret
-```
+| Command | Purpose |
+| --- | --- |
+| `trif compile <file>` | Compile to Python, JavaScript, or bytecode with optional encryption. |
+| `trif run <file>` | Compile and execute a program instantly. |
+| `trif create <name>` | Scaffold projects for `web`, `mobile`, `memory`, `reverse`, or `lib`. |
+| `trif package <...>` | npm-like package manager (init, install, publish, serve, use, list). |
+| `trif docs` | Generate the full handbook in `docs/build/index.html`. |
+| `trif repl` | Interactive shell for experimentation. |
 
 ## Package manager
 
-Initialise a package and publish it to the local registry:
+TrifPM works just like npm, complete with an offline registry and HTTP-compatible server.
 
 ```bash
-python -m trif_lang package init my_package
-python -m trif_lang package publish my_package
+trif package init my-library
+trif package install hello_console
+trif package publish   # publishes to ~/.trif/registry
+trif package serve --port 4873
 ```
 
-Install from the registry:
+- Packages install into the project-local `trif_pkg/` directory.
+- Imports automatically resolve compiled Python modules so `import my-library` works out of the box.
+- `trif package use <url>` switches to custom registries, while `trif package offline` prints the bundled registry path for air-gapped environments.
 
-```bash
-python -m trif_lang package install my_package
+## Standard library highlights
+
+- `std.io` &mdash; Console helpers, JSON utilities, and filesystem access.
+- `std.http` &mdash; Express-style router with `createServer`, JSON/HTML helpers, and hot reload friendly design.
+- `std.mobile` &mdash; Blueprint mobile experiences and emit PWA-ready bundles.
+- `std.memory` &mdash; Manipulate raw buffers for instrumentation or binary patching.
+- `std.reverse` &mdash; Inspect ELF and PE binaries, gather section metadata, and generate hexdumps.
+- `std.managers` &mdash; Manual managers for tasks, state, resources, events, lifecycles, pipelines, and layered configuration.
+- `std.net`, `std.threading`, and `std.data` for networking, concurrency, and structured data.
+
+## Advanced tooling
+
+Trif is equally at home building web APIs, mobile shells, and systems tooling:
+
+```trif
+import std.io as io;
+import std.memory as memory;
+import std.reverse as reverse;
+
+const region = memory.openBuffer(64);
+region.write32(0, 0xDEADBEEF);
+
+const binary = reverse.inspectExecutable("./program");
+io.println("Format: " + binary.format);
+io.println("Sections: " + binary.sections.length);
 ```
 
-Packages live under `~/.trif/registry` and are installed into `~/.trif/packages`.
+The language runtime hot-loads dependencies from `trif_pkg/`, compiles missing `.trif` files on the fly, and exposes helpers like `runtime.extract_export` for ergonomic module interop.
 
 ## Documentation
 
-Generate the static docs:
+Generate the full handbook:
 
 ```bash
-python -m trif_lang docs
+trif docs
 ```
 
-The output `docs/build/index.html` contains an overview of the language and tooling.
+Open `docs/build/index.html` to read through the language tour, CLI reference, package manager guide, and standard library documentation.
 
 ## Examples
 
-- `examples/hello.trif` – basic CLI program.
-- `examples/chat/server.trif` & `examples/chat/client.trif` – socket based multi-client chat.
-- `examples/web/backend.trif` – desktop-friendly HTTP file server.
-- `examples/web/frontend.trif` – frontend code compiled to JavaScript manipulating the DOM.
+- `examples/hello.trif` – zero dependency console application.
+- `examples/chat/` – TCP-based chat server and client using `std.net`.
+- `examples/web/backend.trif` – HTTP server powered by the new `std.http` module.
+- `examples/packages/hello_console/` – offline-installable package demonstrating TrifPM.
+- `examples/web/frontend.trif` – JavaScript output targeting modern browsers.
 
 ## VS Code extension
 
-The `vscode-extension` folder contains a simple Visual Studio Code extension that provides syntax highlighting, snippets, and hover tips for Trif files. See the README inside that folder for installation instructions.
+The `vscode-extension/` folder provides syntax highlighting, snippets, and inline documentation. See the extension README for installation instructions.
 
 ## Interoperability
 
-Because Trif compiles to Python or JavaScript, you can call into native modules from either ecosystem. Use the generated Python code to embed Trif logic inside existing Python applications, or the JavaScript output to integrate with Node.js toolchains.
+Trif compiles to Python and JavaScript. Use the Python backend to embed Trif logic inside desktop applications or scripts, and the JavaScript backend to target Node.js, Service Workers, or modern browsers.
 
 ## License
 
