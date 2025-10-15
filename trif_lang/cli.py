@@ -13,6 +13,7 @@ from functools import partial
 from pathlib import Path
 from typing import Sequence
 
+from .ide import launch_desktop_gui, launch_web_editor
 from .package_manager import OFFLINE_REGISTRY, LOCAL_REGISTRY
 from .toolchain import BuildOptions, Toolchain
 
@@ -286,6 +287,25 @@ def repl_command(_: argparse.Namespace) -> None:
         buffer.clear()
 
 
+def gui_command(args: argparse.Namespace) -> None:
+    project_root = Path(args.project).resolve()
+    toolchain = Toolchain(project_root=project_root)
+    source_path = Path(args.source).resolve() if args.source else None
+    launch_desktop_gui(toolchain, path=source_path, optimize=not args.no_opt)
+
+
+def web_command(args: argparse.Namespace) -> None:
+    project_root = Path(args.project).resolve()
+    toolchain = Toolchain(project_root=project_root)
+    launch_web_editor(
+        toolchain,
+        host=args.host,
+        port=args.port,
+        optimize=not args.no_opt,
+        open_browser=not args.no_browser,
+    )
+
+
 def configure_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="trif", description="Trif language toolchain")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -376,6 +396,20 @@ def configure_parser() -> argparse.ArgumentParser:
 
     repl_p = sub.add_parser("repl", help="Interactive Trif shell")
     repl_p.set_defaults(func=repl_command)
+
+    gui_p = sub.add_parser("gui", help="Launch the desktop Trif Studio editor")
+    gui_p.add_argument("source", nargs="?", help="Optional file to open")
+    gui_p.add_argument("--project", default=os.getcwd(), help="Project root (defaults to CWD)")
+    gui_p.add_argument("--no-opt", action="store_true", help="Disable optimizations when running code")
+    gui_p.set_defaults(func=gui_command)
+
+    web_p = sub.add_parser("web", help="Launch the web-based Trif Studio editor")
+    web_p.add_argument("--project", default=os.getcwd(), help="Project root (defaults to CWD)")
+    web_p.add_argument("--host", default="127.0.0.1", help="Host to bind the editor server")
+    web_p.add_argument("--port", type=int, default=8765, help="Port to bind the editor server")
+    web_p.add_argument("--no-browser", action="store_true", help="Do not automatically open the browser")
+    web_p.add_argument("--no-opt", action="store_true", help="Disable optimizations when running code")
+    web_p.set_defaults(func=web_command)
 
     return parser
 

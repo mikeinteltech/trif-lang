@@ -78,6 +78,21 @@ export function main() {
 | `trif package <...>` | npm-like package manager (init, install, publish, serve, use, list). |
 | `trif docs` | Open the handbook located at `docs/index.html`. |
 | `trif repl` | Interactive shell for experimentation. |
+| `trif gui [file]` | Launch the desktop Trif Studio editor with optional file preloaded. |
+| `trif web` | Start the in-browser Trif Studio editor. |
+
+## Trif Studio: GUI and web editor
+
+`trif gui` opens a native Tkinter application that bundles a code editor,
+syntax-aware compilation buttons, and an embedded runner. It uses the same
+compiler and runtime as the CLI, so execution speed matches `trif run` while
+providing conveniences like open/save dialogs and side-by-side output.
+
+Prefer a browser-based experience? `trif web` spins up a lightweight local
+server (default `http://127.0.0.1:8765`) and launches an immersive editor with
+instant run/compile actions. Everything stays on your machine; the server simply
+invokes the local toolchain to keep latency low. Pass `--no-browser` to prevent
+auto-opening a window or tweak `--host`/`--port` for collaborative LAN setups.
 
 ## Package manager
 
