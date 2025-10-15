@@ -11,10 +11,10 @@ import textwrap
 import webbrowser
 from functools import partial
 from pathlib import Path
+from typing import Sequence
 
-from .compiler import Compiler
-from .package_manager import OFFLINE_REGISTRY, LOCAL_REGISTRY, PackageManager
-from .runtime import Runtime
+from .package_manager import OFFLINE_REGISTRY, LOCAL_REGISTRY
+from .toolchain import BuildOptions, Toolchain
 
 
 TEMPLATE_SNIPPETS = {
@@ -95,6 +95,8 @@ TEMPLATE_SNIPPETS = {
     ).strip(),
 }
 
+BUILD_TARGET_CHOICES: tuple[str, ...] = ("python", "javascript", "bytecode")
+
 
 def _default_output_name(source: Path, target: str) -> Path:
     if target == "python":
@@ -111,7 +113,8 @@ def compile_command(args: argparse.Namespace) -> None:
     if not source.exists():
         raise SystemExit(f"Source file {source} does not exist")
 
-    compiler = Compiler()
+    toolchain = Toolchain(project_root=Path.cwd())
+    compiler = toolchain.compiler
     output_path = Path(args.output) if args.output else _default_output_name(source, args.target)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -129,16 +132,45 @@ def compile_command(args: argparse.Namespace) -> None:
 
 
 def run_command(args: argparse.Namespace) -> None:
-    source = Path(args.source)
-    compiler = Compiler()
-    runtime = Runtime()
-    result = compiler.compile_file(source, target="python", optimize=not args.no_opt)
-    runtime.execute_python(result, argv=args.args)
+    toolchain = Toolchain(project_root=Path.cwd())
+    toolchain.run(Path(args.source), optimize=not args.no_opt, argv=args.args)
+
+
+def build_command(args: argparse.Namespace) -> None:
+    if args.target and args.all_targets:
+        raise SystemExit("--target and --all-targets cannot be used together")
+
+    project_root = Path(args.project).resolve()
+    toolchain = Toolchain(project_root=project_root)
+
+    if args.all_targets:
+        targets: Sequence[str] = BUILD_TARGET_CHOICES
+    elif args.target:
+        targets = tuple(args.target)
+    else:
+        targets = ("python",)
+
+    options = BuildOptions(
+        targets=targets,
+        optimize=not args.debug,
+        encrypt=args.encrypt,
+        build_dir=Path(args.build_dir),
+    )
+
+    try:
+        artifacts = toolchain.build(Path(args.source), options=options)
+    except (FileNotFoundError, ValueError) as exc:
+        raise SystemExit(str(exc))
+
+    build_root = toolchain.resolve_build_directory(args.build_dir)
+    print(f"Built {len(artifacts)} artifact(s) into {build_root}")
+    print(toolchain.format_build_summary(artifacts))
 
 
 def create_command(args: argparse.Namespace) -> None:
     project = Path(args.name)
-    manager = PackageManager(project_root=project)
+    toolchain = Toolchain(project_root=project)
+    manager = toolchain.package_manager
     manager.init(project)
     snippet = TEMPLATE_SNIPPETS[args.template]
     main_path = project / "src" / "main.trif"
@@ -177,8 +209,9 @@ def create_command(args: argparse.Namespace) -> None:
 
 
 def package_command(args: argparse.Namespace) -> None:
-    project_root = Path(getattr(args, "project", os.getcwd()))
-    manager = PackageManager(project_root=project_root)
+    project_root = Path(getattr(args, "project", os.getcwd())).resolve()
+    toolchain = Toolchain(project_root=project_root)
+    manager = toolchain.package_manager
     action = args.action
     if action == "init":
         manager.init(Path(args.path))
@@ -228,8 +261,9 @@ def docs_command(_: argparse.Namespace) -> None:
 
 
 def repl_command(_: argparse.Namespace) -> None:
-    runtime = Runtime()
-    compiler = Compiler()
+    toolchain = Toolchain(project_root=Path.cwd())
+    runtime = toolchain.runtime
+    compiler = toolchain.compiler
     print("Trif interactive shell. Type :quit to exit.")
     buffer: list[str] = []
     while True:
@@ -269,6 +303,25 @@ def configure_parser() -> argparse.ArgumentParser:
     run_p.add_argument("args", nargs=argparse.REMAINDER, help="Arguments passed to the program")
     run_p.add_argument("--no-opt", action="store_true", help="Disable optimizations")
     run_p.set_defaults(func=run_command)
+
+    build_p = sub.add_parser("build", help="Compile into the project build directory")
+    build_p.add_argument("source", nargs="?", default="src/main.trif", help="Entry file to compile")
+    build_p.add_argument("--project", default=os.getcwd(), help="Project root (defaults to CWD)")
+    build_p.add_argument(
+        "--target",
+        action="append",
+        choices=BUILD_TARGET_CHOICES,
+        help="Target backend to emit; may be used multiple times",
+    )
+    build_p.add_argument(
+        "--all-targets",
+        action="store_true",
+        help="Emit python, javascript, and bytecode outputs",
+    )
+    build_p.add_argument("--build-dir", default="build", help="Directory for build artifacts")
+    build_p.add_argument("--debug", action="store_true", help="Disable optimizations for easier debugging")
+    build_p.add_argument("--encrypt", help="Encrypt textual outputs with the provided passphrase")
+    build_p.set_defaults(func=build_command)
 
     create_p = sub.add_parser("create", help="Scaffold a new Trif project")
     create_p.add_argument("name")
