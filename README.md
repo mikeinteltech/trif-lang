@@ -48,6 +48,7 @@ Invoke the CLI with `trif.ps1` from any PowerShell session.
 trif create my-app --template web
 cd my-app
 trif run src/main.trif
+trif build src/main.trif --all-targets
 ```
 
 Install the bundled example package (no network required):
@@ -71,6 +72,7 @@ export function main() {
 | Command | Purpose |
 | --- | --- |
 | `trif compile <file>` | Compile to Python, JavaScript, or bytecode with optional encryption. |
+| `trif build <file>` | Run the unified builder and emit artifacts to `build/<target>/...`. |
 | `trif run <file>` | Compile and execute a program instantly. |
 | `trif create <name>` | Scaffold projects for `web`, `mobile`, `memory`, `reverse`, or `lib`. |
 | `trif package <...>` | npm-like package manager (init, install, publish, serve, use, list). |
@@ -107,6 +109,23 @@ trif package serve --port 4873
 - `std.net`, `std.threading`, and `std.data` for networking, concurrency, and structured data.
 
 ## Advanced tooling
+
+### Unified toolchain workflow
+
+The `trif` executable now fronts the entire toolchain. A single command wires
+up the compiler, runtime, and package manager so projects can go from source to
+optimized artifacts without juggling separate utilities.
+
+```bash
+trif build src/main.trif --target python --target bytecode --build-dir build/release
+```
+
+Build outputs are grouped by backend (for example `build/python/` and
+`build/bytecode/`), making it easy to inspect or ship different targets side by
+side. Pass `--debug` to disable optimizations, `--encrypt <passphrase>` to
+protect Python/JavaScript output, or `--all-targets` to generate every backend
+in one go. The command respects your project root via `--project`, so builds
+work equally well inside monorepos or sandbox directories.
 
 Trif is equally at home building web APIs, mobile shells, and systems tooling:
 
